@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi despensa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #EDF1F5;
+  --surface: #FFFFFF;
+  --ink: #16232E;
+  --muted: #55667A;
+  --line: #D3DCE5;
+  --accent: #1B5E9B;
+  --accent-ink: #FFFFFF;
+  --tint: #E1EAF3;
+  --ok: #2A7A58;
+  --low: #A96400;
+  --out: #B23A30;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10181F;
+    --surface: #18232C;
+    --ink: #E8EEF3;
+    --muted: #93A4B3;
+    --line: #2A3945;
+    --accent: #6FB0EC;
+    --accent-ink: #0C1A26;
+    --tint: #1F2E3B;
+    --ok: #5CC49A;
+    --low: #E8A445;
+    --out: #EE7B70;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10181F;
+  --surface: #18232C;
+  --ink: #E8EEF3;
+  --muted: #93A4B3;
+  --line: #2A3945;
+  --accent: #6FB0EC;
+  --accent-ink: #0C1A26;
+  --tint: #1F2E3B;
+  --ok: #5CC49A;
+  --low: #E8A445;
+  --out: #EE7B70;
+  color-scheme: dark;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+  z-index: 10;
+}
+.wrap { max-width: 640px; margin: 0 auto; }
+header.top {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 9;
+  background: var(--bg);
+  padding: 14px 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+h1 {
+  font-family: "Bricolage Grotesque", "Source Sans 3", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.01em;
+  margin: 0;
+  line-height: 1.1;
+}
+#summary { color: var(--muted); font-size: 15px; margin: 4px 0 10px; min-height: 21px; }
+nav.tabs { display: flex; gap: 22px; }
+nav.tabs button {
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 8px 0 9px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+main { padding: 14px 16px 96px; }
+button { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.btn {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--line); }
+.btn.danger { background: transparent; color: var(--out); border: 1.5px solid var(--out); }
+.linkbtn { background: none; border: 0; color: var(--accent); font-weight: 600; cursor: pointer; padding: 6px 0; }
+
+.toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.toolbar input[type="search"], .toolbar input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+input[type="text"], input[type="search"], select, textarea {
+  font: inherit;
+  width: 100%;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+.chip {
+  border: 1.5px solid var(--line);
+  background: transparent;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--tint); border-color: var(--accent); color: var(--ink); font-weight: 600; }
+
+.group { margin-top: 22px; }
+.group h2 {
+  font-family: "Bricolage Grotesque", "Source Sans 3", system-ui, sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.group h2 small { font-family: "Source Sans 3", system-ui, sans-serif; font-weight: 500; color: var(--muted); font-size: 15px; }
+ul.rows { list-style: none; margin: 0; padding: 0; }
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  align-items: center;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+}
+.row:first-child { border-top: 0; }
+.row .name {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  font-weight: 600;
+  font-size: 17px;
+  cursor: pointer;
+}
+.row .meta { color: var(--muted); font-size: 14px; grid-column: 1; }
+.row .barline { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.bar { flex: 1; height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 3px; background: var(--ok); }
+.row.low .bar i { background: var(--low); }
+.row.out .bar i { background: var(--out); }
+.status { font-size: 13px; font-weight: 600; min-width: 74px; text-align: right; }
+.row.ok .status { color: var(--ok); }
+.row.low .status { color: var(--low); }
+.row.out .status { color: var(--out); }
+
+.stepper { display: inline-flex; align-items: center; gap: 4px; grid-column: 2; grid-row: 1 / span 2; }
+.stepper button {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.stepper input {
+  width: 54px;
+  min-height: 40px;
+  padding: 6px 4px;
+  text-align: center;
+  font-weight: 600;
+  border-radius: 10px;
+}
+.empty { color: var(--muted); padding: 24px 0; }
+.empty .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+
+.lrow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 2px 12px;
+  align-items: center;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+}
+.lrow:first-child { border-top: 0; }
+.lrow input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--accent); margin: 0; }
+.lrow .name { font-weight: 600; }
+.lrow .meta { color: var(--muted); font-size: 14px; grid-column: 2; }
+.lrow .price { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.lrow .stepper { grid-column: 3; grid-row: 2; justify-self: end; }
+.lrow .stepper button { width: 34px; height: 34px; font-size: 19px; }
+.lrow .stepper input { width: 48px; min-height: 34px; }
+.lrow.done .name { color: var(--muted); text-decoration: line-through; }
+
+.actionbar {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  margin: 18px -16px 0;
+}
+.actionbar .btn { width: 100%; }
+.note { color: var(--muted); font-size: 15px; margin: 8px 0 0; }
+.hist { margin-top: 28px; }
+.hist h2 { font-family: "Bricolage Grotesque", "Source Sans 3", system-ui, sans-serif; font-size: 19px; margin: 0 0 6px; }
+.hist p { margin: 4px 0; color: var(--muted); font-size: 15px; }
+textarea { min-height: 150px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+.stack { display: grid; gap: 12px; margin-top: 12px; }
+.stack .row-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+
+dialog {
+  border: 0;
+  border-radius: 16px;
+  padding: 0;
+  width: min(480px, calc(100% - 24px));
+  background: var(--surface);
+  color: var(--ink);
+  max-height: calc(100% - 24px);
+}
+dialog::backdrop { background: rgba(10, 20, 30, 0.55); }
+.dlg { padding: 18px 18px 16px; display: grid; gap: 12px; }
+.dlg h2 { font-family: "Bricolage Grotesque", "Source Sans 3", system-ui, sans-serif; font-size: 22px; margin: 0; }
+.dlg label { display: grid; gap: 4px; font-size: 15px; font-weight: 600; }
+.dlg .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dlg .acts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.dlg .acts .spacer { flex: 1; }
+.err { color: var(--out); font-size: 15px; min-height: 20px; margin: 0; }
+
+[hidden] { display: none !important; }
+#scanVideo { width: 100%; aspect-ratio: 4 / 3; background: #000; border-radius: 12px; object-fit: cover; }
+.scanmsg { font-weight: 600; margin: 0; min-height: 21px; }
+.thumb { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; background: #fff; vertical-align: middle; margin-right: 10px; }
+#scanInfo { display: flex; gap: 12px; align-items: center; }
+#scanInfo img { width: 72px; height: 72px; object-fit: contain; border-radius: 10px; background: #fff; }
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 50;
+  max-width: calc(100% - 32px);
+}
+#toast.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Mi despensa</h1>
+    <div id="summary"></div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </div>
+</header>
+<main class="wrap" id="view"></main>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <div class="dlg">
+    <h2 id="dlgTitle">Producto</h2>
+    <label>Nombre
+      <input type="text" id="f-name" autocomplete="off">
+    </label>
+    <div class="two">
+      <label>Tienda
+        <select id="f-store"></select>
+      </label>
+      <label>Categoría
+        <select id="f-cat"></select>
+      </label>
+    </div>
+    <div class="two">
+      <label>Unidad
+        <select id="f-unit"></select>
+      </label>
+      <label>Precio aprox. por unidad (€)
+        <input type="text" id="f-price" inputmode="decimal" placeholder="0,00" autocomplete="off">
+      </label>
+    </div>
+    <div class="two">
+      <label>Tengo ahora
+        <input type="text" id="f-stock" inputmode="decimal" placeholder="0" autocomplete="off">
+      </label>
+      <label>Necesito al mes
+        <input type="text" id="f-target" inputmode="decimal" placeholder="0" autocomplete="off">
+      </label>
+    </div>
+    <p class="note" id="f-code"></p>
+    <p class="err" id="f-err" role="alert"></p>
+    <div class="acts">
+      <button class="btn" id="btnSave" type="button">Guardar</button>
+      <button class="btn ghost" id="btnCancel" type="button">Cancelar</button>
+      <span class="spacer"></span>
+      <button class="btn danger" id="btnDel" type="button">Eliminar</button>
+    </div>
+  </div>
+</dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="scanDlg" aria-labelledby="scanTitle">
+  <div class="dlg">
+    <h2 id="scanTitle">Escanear productos</h2>
+    <video id="scanVideo" playsinline muted></video>
+    <p class="scanmsg" id="scanMsg"></p>
+    <p class="err" id="scanErr" role="alert"></p>
+    <div id="scanNew" class="stack" hidden>
+      <p class="scanmsg" id="scanNewMsg"></p>
+      <div id="scanInfo" hidden>
+        <img id="scanImg" alt="">
+        <div><strong id="scanName"></strong><br><span id="scanBrand"></span></div>
+      </div>
+      <label id="scanLinkWrap">¿Es uno de tus productos?
+        <select id="scanLink"></select>
+      </label>
+      <div class="acts">
+        <button class="btn" id="scanFromOff" type="button" hidden>Añadir con estos datos</button>
+        <button class="btn" id="scanAssign" type="button">Asignar y sumar 1</button>
+        <button class="btn ghost" id="scanCreate" type="button">Crear producto nuevo</button>
+        <button class="btn ghost" id="scanSkip" type="button">Omitir</button>
+      </div>
+    </div>
+    <label>Código de barras (o escanéalo con tu lector)
+      <input type="text" id="scanCode" inputmode="numeric" autocomplete="off">
+    </label>
+    <div class="acts"><button class="btn" id="scanClose" type="button">Terminar</button></div>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var KEY = "despensa-v1";
+  var STORES = ["Mercadona", "Consum", "Otra tienda"];
+  var CATS = ["Básicos y conservas", "Frescos y lácteos", "Congelados", "Bebidas", "Limpieza e higiene", "Otros"];
+  var UNITS = ["ud", "kg", "l", "pack"];
+
+  var state = { items: [], purchases: [], lastStore: "Mercadona" };
+  var ui = { tab: "despensa", q: "", store: "todas", buy: {}, editId: null, armDelete: false, armReset: false, backupText: "" };
+
+  function $(s) { return document.querySelector(s); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  var eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+  function r2(n) { return Math.round(n * 100) / 100; }
+  function num(n) { return String(r2(n)).replace(".", ","); }
+  function parseNum(v) {
+    var n = parseFloat(String(v).replace(",", "."));
+    return isFinite(n) && n >= 0 ? n : 0;
+  }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function stepOf(it) { return it.unit === "kg" || it.unit === "l" ? 0.5 : 1; }
+  function missing(it) { return Math.max(0, r2(it.target - it.stock)); }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var d = JSON.parse(raw);
+        if (d && Array.isArray(d.items)) {
+          state.items = d.items;
+          state.purchases = Array.isArray(d.purchases) ? d.purchases : [];
+          state.lastStore = d.lastStore || "Mercadona";
+        }
+      }
+    } catch (e) { /* sin datos guardados */ }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* almacenamiento no disponible */ }
+  }
+  var toastTimer;
+  function toast(msg) {
+    var t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2400);
+  }
+
+  /* ---------- Cabecera ---------- */
+  function renderHead() {
+    var n = state.items.length;
+    var falta = state.items.filter(function (i) { return missing(i) > 0; });
+    var total = falta.reduce(function (s, i) { return s + missing(i) * i.price; }, 0);
+    var txt = "Aún sin productos";
+    if (n) {
+      txt = n + (n === 1 ? " producto" : " productos") + " · " + falta.length + " por reponer";
+      if (falta.length) txt += " · ≈ " + eur.format(total);
+    }
+    $("#summary").textContent = txt;
+    var tabs = [["despensa", "Despensa"], ["lista", "Lista de compra"], ["copia", "Copia"]];
+    $("#tabs").innerHTML = tabs.map(function (t) {
+      return '<button role="tab" data-act="tab" data-tab="' + t[0] + '" aria-selected="' + (ui.tab === t[0]) + '">' + t[1] + "</button>";
+    }).join("");
+  }
+
+  /* ---------- Despensa ---------- */
+  function rowHTML(it) {
+    var miss = missing(it);
+    var pct = it.target > 0 ? Math.min(100, Math.round((it.stock / it.target) * 100)) : 100;
+    var cls = it.stock <= 0 && it.target > 0 ? "out" : (miss > 0 ? "low" : "ok");
+    var label = cls === "out" ? "Agotado" : (miss > 0 ? "Faltan " + num(miss) : "Completo");
+    var meta = esc(it.store) + " · " + esc(it.unit) + (it.price ? " · ≈ " + eur.format(it.price) : "");
+    return '<li class="row ' + cls + '">' +
+      '<button class="name" data-act="edit" data-id="' + it.id + '" aria-label="Editar ' + esc(it.name) + '">' + (it.img ? '<img class="thumb" src="' + esc(it.img) + '" alt="" loading="lazy">' : "") + esc(it.name) + "</button>" +
+      '<div class="stepper">' +
+        '<button data-act="dec" data-id="' + it.id + '" aria-label="Quitar uno de ' + esc(it.name) + '">−</button>' +
+        '<input type="text" inputmode="decimal" data-act="setstock" data-id="' + it.id + '" value="' + num(it.stock) + '" aria-label="Cantidad de ' + esc(it.name) + '">' +
+        '<button data-act="inc" data-id="' + it.id + '" aria-label="Añadir uno de ' + esc(it.name) + '">+</button>' +
+      "</div>" +
+      '<div class="meta">' + meta + "</div>" +
+      '<div class="barline"><div class="bar"><i style="width:' + pct + '%"></i></div>' +
+      '<span class="status">' + num(it.stock) + " de " + num(it.target) + "</span></div>" +
+      "</li>";
+  }
+  function emptyHTML() {
+    return '<div class="empty"><p>Aquí verás lo que tienes en casa. Añade tus productos habituales una sola vez y después solo tendrás que ajustar las cantidades al acabar el mes.</p>' +
+      '<div class="btns"><button class="btn" data-act="add">Añadir producto</button>' +
+      '<button class="btn ghost" data-act="example">Cargar ejemplo</button></div></div>';
+  }
+  function despensaListHTML() {
+    if (!state.items.length) return emptyHTML();
+    var q = ui.q.trim().toLowerCase();
+    var items = state.items.filter(function (i) {
+      return (ui.store === "todas" || i.store === ui.store) && (!q || i.name.toLowerCase().indexOf(q) !== -1);
+    });
+    if (!items.length) return '<p class="empty">Ningún producto coincide con la búsqueda.</p>';
+    var cats = CATS.slice();
+    items.forEach(function (i) { if (cats.indexOf(i.cat) === -1) cats.push(i.cat); });
+    return cats.map(function (c) {
+      var g = items.filter(function (i) { return i.cat === c; })
+        .sort(function (a, b) { return a.name.localeCompare(b.name, "es"); });
+      if (!g.length) return "";
+      return '<section class="group"><h2>' + esc(c) + "<small>" + g.length + "</small></h2><ul class=\"rows\">" +
+        g.map(rowHTML).join("") + "</ul></section>";
+    }).join("");
+  }
+  function renderDespensa(v) {
+    var chips = ["todas"].concat(STORES).map(function (s) {
+      return '<button class="chip" data-act="store" data-store="' + esc(s) + '" aria-pressed="' + (ui.store === s) + '">' + (s === "todas" ? "Todas" : esc(s)) + "</button>";
+    }).join("");
+    v.innerHTML =
+      '<div class="toolbar"><input type="search" id="q" placeholder="Buscar producto" value="' + esc(ui.q) + '" aria-label="Buscar producto">' +
+      '<button class="btn ghost" data-act="scan">Escanear</button><button class="btn" data-act="add">Añadir</button></div>' +
+      '<div class="chips">' + chips + "</div>" +
+      '<div id="list">' + despensaListHTML() + "</div>";
+  }
+
+  /* ---------- Lista de compra ---------- */
+  function getBuy(it) {
+    var b = ui.buy[it.id] || {};
+    return { checked: !!b.checked, qty: b.qty != null ? b.qty : missing(it) };
+  }
+  function renderLista(v) {
+    var need = state.items.filter(function (i) { return missing(i) > 0; });
+    var html = "";
+    if (!state.items.length) {
+      v.innerHTML = '<p class="empty">Primero añade productos en la pestaña Despensa. La lista se calcula sola a partir de lo que tienes y lo que necesitas al mes.</p>';
+      return;
+    }
+    if (!need.length) {
+      html += '<p class="empty">No falta nada: todo está al nivel que indicaste para el mes.</p>';
+    }
+    var stores = STORES.slice();
+    need.forEach(function (i) { if (stores.indexOf(i.store) === -1) stores.push(i.store); });
+    var checkedCount = 0, checkedTotal = 0;
+    stores.forEach(function (s) {
+      var g = need.filter(function (i) { return i.store === s; })
+        .sort(function (a, b) { return a.cat.localeCompare(b.cat, "es") || a.name.localeCompare(b.name, "es"); });
+      if (!g.length) return;
+      var sub = g.reduce(function (t, i) { return t + getBuy(i).qty * i.price; }, 0);
+      html += '<section class="group"><h2>' + esc(s) + "<small>≈ " + eur.format(sub) + "</small></h2>" +
+        '<button class="linkbtn" data-act="checkall" data-store="' + esc(s) + '">Marcar todo en ' + esc(s) + "</button><ul class=\"rows\">";
+      g.forEach(function (i) {
+        var b = getBuy(i);
+        if (b.checked && b.qty > 0) { checkedCount++; checkedTotal += b.qty * i.price; }
+        html += '<li class="lrow ' + (b.checked ? "done" : "") + '">' +
+          '<input type="checkbox" data-act="check" data-id="' + i.id + '"' + (b.checked ? " checked" : "") + ' aria-label="Marcar ' + esc(i.name) + '">' +
+          '<span class="name">' + esc(i.name) + "</span>" +
+          '<span class="price">' + (i.price ? "≈ " + eur.format(b.qty * i.price) : "") + "</span>" +
+          '<span class="meta">Tienes ' + num(i.stock) + " de " + num(i.target) + " " + esc(i.unit) + "</span>" +
+          '<div class="stepper">' +
+            '<button data-act="buydec" data-id="' + i.id + '" aria-label="Comprar menos ' + esc(i.name) + '">−</button>' +
+            '<input type="text" inputmode="decimal" data-act="setbuy" data-id="' + i.id + '" value="' + num(b.qty) + '" aria-label="Cantidad a comprar de ' + esc(i.name) + '">' +
+            '<button data-act="buyinc" data-id="' + i.id + '" aria-label="Comprar más ' + esc(i.name) + '">+</button>' +
+          "</div></li>";
+      });
+      html += "</ul></section>";
+    });
+    if (need.length) {
+      html += '<div class="actionbar"><button class="btn" data-act="register"' + (checkedCount ? "" : " disabled") + ">" +
+        (checkedCount ? "Registrar compra (" + checkedCount + ") · ≈ " + eur.format(checkedTotal) : "Marca lo que metas en el carro") +
+        "</button>" +
+        '<p class="note">Al registrar, las cantidades marcadas se suman a tu despensa.</p></div>';
+    }
+    if (state.purchases.length) {
+      html += '<section class="hist"><h2>Últimas compras</h2>' +
+        state.purchases.slice(0, 4).map(function (p) {
+          var d = new Date(p.date).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" });
+          return "<p>" + d + " · " + p.lines + (p.lines === 1 ? " producto" : " productos") + " · ≈ " + eur.format(p.total) + "</p>";
+        }).join("") + "</section>";
+    }
+    v.innerHTML = html;
+  }
+
+  /* ---------- Copia ---------- */
+  function renderCopia(v) {
+    v.innerHTML =
+      '<p>Tus datos se guardan solo en este navegador y en este dispositivo: nadie más los ve. Si borras los datos del navegador, se pierden, así que copia el texto de abajo de vez en cuando y guárdalo en tus notas.</p>' +
+      '<div class="stack">' +
+      '<textarea id="backup" aria-label="Copia de seguridad" spellcheck="false">' + esc(ui.backupText) + "</textarea>" +
+      '<div class="row-btns">' +
+        '<button class="btn" data-act="mkbackup">Generar copia</button>' +
+        '<button class="btn ghost" data-act="copybackup">Copiar texto</button>' +
+        '<button class="btn ghost" data-act="restore">Restaurar desde el texto</button>' +
+      "</div>" +
+      '<p class="note">Para restaurar, pega aquí una copia que hayas guardado y pulsa Restaurar. Sustituye lo que haya ahora.</p>' +
+      '<div class="row-btns" style="margin-top:14px"><button class="btn danger" data-act="reset">' + (ui.armReset ? "¿Seguro? Pulsa otra vez para borrar todo" : "Borrar todos los datos") + "</button></div>" +
+      "</div>";
+  }
+
+  function render() {
+    renderHead();
+    var v = $("#view");
+    if (ui.tab === "despensa") renderDespensa(v);
+    else if (ui.tab === "lista") renderLista(v);
+    else renderCopia(v);
+  }
+
+  /* ---------- Diálogo de producto ---------- */
+  function fillSelect(sel, arr, val) {
+    sel.innerHTML = arr.map(function (o) { return '<option value="' + esc(o) + '"' + (o === val ? " selected" : "") + ">" + esc(o) + "</option>"; }).join("");
+  }
+  function openEdit(id, code, pre) {
+    ui.editId = id;
+    ui.pendingCode = code || "";
+    ui.pendingImg = (pre && pre.img) || "";
+    ui.fromScan = !!code;
+    ui.armDelete = false;
+    var it = id ? state.items.filter(function (i) { return i.id === id; })[0] : null;
+    $("#dlgTitle").textContent = it ? "Editar producto" : "Nuevo producto";
+    $("#f-name").value = it ? it.name : ((pre && pre.name) || "");
+    fillSelect($("#f-store"), STORES, it ? it.store : state.lastStore);
+    fillSelect($("#f-cat"), CATS, it ? it.cat : CATS[0]);
+    fillSelect($("#f-unit"), UNITS, it ? it.unit : "ud");
+    $("#f-price").value = it && it.price ? num(it.price) : "";
+    $("#f-stock").value = it ? num(it.stock) : (code ? "1" : "");
+    $("#f-target").value = it ? num(it.target) : "";
+    $("#f-err").textContent = "";
+    var shownCode = it ? (it.code || "") : (code || "");
+    $("#f-code").textContent = shownCode ? "Código de barras: " + shownCode : "";
+    $("#btnDel").style.display = it ? "" : "none";
+    $("#btnDel").textContent = "Eliminar";
+    var d = $("#dlg");
+    if (typeof d.showModal === "function") d.showModal(); else d.setAttribute("open", "");
+    setTimeout(function () { $("#f-name").focus(); }, 30);
+  }
+  function closeDlg() {
+    var d = $("#dlg");
+    if (typeof d.close === "function") d.close(); else d.removeAttribute("open");
+  }
+  function saveEdit() {
+    var name = $("#f-name").value.trim();
+    if (!name) { $("#f-err").textContent = "Escribe el nombre del producto."; return; }
+    var data = {
+      name: name,
+      store: $("#f-store").value,
+      cat: $("#f-cat").value,
+      unit: $("#f-unit").value,
+      price: parseNum($("#f-price").value),
+      stock: parseNum($("#f-stock").value),
+      target: parseNum($("#f-target").value)
+    };
+    if (ui.editId) {
+      state.items.forEach(function (i) { if (i.id === ui.editId) { for (var k in data) i[k] = data[k]; } });
+    } else {
+      data.id = uid();
+      data.code = ui.pendingCode || "";
+      data.img = ui.pendingImg || "";
+      state.items.push(data);
+    }
+    state.lastStore = data.store;
+    save(); closeDlg(); render();
+    toast("Guardado");
+    if (ui.fromScan) { ui.fromScan = false; openScan(); }
+  }
+
+  /* ---------- Ejemplo ---------- */
+  function loadExample() {
+    var ex = [
+      ["Leche entera 1 l", "Mercadona", "Frescos y lácteos", "ud", 0.95, 5, 12],
+      ["Huevos (docena)", "Mercadona", "Frescos y lácteos", "ud", 2.6, 1, 3],
+      ["Yogur natural (pack 4)", "Mercadona", "Frescos y lácteos", "pack", 1.2, 0, 3],
+      ["Arroz 1 kg", "Mercadona", "Básicos y conservas", "kg", 1.5, 1, 2],
+      ["Pasta espaguetis", "Mercadona", "Básicos y conservas", "ud", 1.15, 3, 4],
+      ["Tomate frito", "Mercadona", "Básicos y conservas", "ud", 1.0, 2, 4],
+      ["Atún en lata (pack 3)", "Mercadona", "Básicos y conservas", "pack", 3.3, 0, 2],
+      ["Aceite de oliva 1 l", "Mercadona", "Básicos y conservas", "l", 9.5, 1, 2],
+      ["Café molido", "Consum", "Básicos y conservas", "ud", 2.8, 1, 1],
+      ["Guisantes congelados", "Mercadona", "Congelados", "ud", 1.4, 0, 2],
+      ["Agua 6 x 1,5 l", "Mercadona", "Bebidas", "pack", 2.0, 2, 4],
+      ["Papel higiénico (pack)", "Mercadona", "Limpieza e higiene", "pack", 4.5, 0, 1],
+      ["Detergente", "Mercadona", "Limpieza e higiene", "ud", 6.0, 1, 1]
+    ];
+    ex.forEach(function (e) {
+      state.items.push({ id: uid(), name: e[0], store: e[1], cat: e[2], unit: e[3], price: e[4], stock: e[5], target: e[6] });
+    });
+    save(); render();
+    toast("Ejemplo cargado: edita nombres y precios a tu gusto");
+  }
+
+  /* ---------- Eventos ---------- */
+  function findItem(id) { return state.items.filter(function (i) { return i.id === id; })[0]; }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]");
+    if (!b || b.tagName === "INPUT") return;
+    var act = b.getAttribute("data-act");
+    var id = b.getAttribute("data-id");
+    var it = id ? findItem(id) : null;
+
+    if (act === "tab") { ui.tab = b.getAttribute("data-tab"); ui.armReset = false; render(); window.scrollTo(0, 0); }
+    else if (act === "add") { openEdit(null); }
+    else if (act === "edit") { openEdit(id); }
+    else if (act === "example") { loadExample(); }
+    else if (act === "scan") { openScan(); }
+    else if (act === "store") { ui.store = b.getAttribute("data-store"); render(); }
+    else if (act === "inc" && it) { it.stock = r2(it.stock + stepOf(it)); save(); render(); }
+    else if (act === "dec" && it) { it.stock = Math.max(0, r2(it.stock - stepOf(it))); save(); render(); }
+    else if (act === "buyinc" && it) { var a = getBuy(it); ui.buy[id] = { checked: a.checked, qty: r2(a.qty + stepOf(it)) }; render(); }
+    else if (act === "buydec" && it) { var c = getBuy(it); ui.buy[id] = { checked: c.checked, qty: Math.max(0, r2(c.qty - stepOf(it))) }; render(); }
+    else if (act === "checkall") {
+      var s = b.getAttribute("data-store");
+      var group = state.items.filter(function (i) { return i.store === s && missing(i) > 0; });
+      var allOn = group.every(function (i) { return getBuy(i).checked; });
+      group.forEach(function (i) { var g = getBuy(i); ui.buy[i.id] = { checked: !allOn, qty: g.qty }; });
+      render();
+    }
+    else if (act === "register") {
+      var lines = 0, total = 0;
+      state.items.forEach(function (i) {
+        var g = getBuy(i);
+        if (g.checked && g.qty > 0 && missing(i) > 0) {
+          i.stock = r2(i.stock + g.qty);
+          lines++; total += g.qty * i.price;
+        }
+      });
+      if (lines) {
+        state.purchases.unshift({ date: new Date().toISOString(), lines: lines, total: r2(total) });
+        state.purchases = state.purchases.slice(0, 20);
+        ui.buy = {};
+        save(); render();
+        toast("Compra registrada");
+      }
+    }
+    else if (act === "mkbackup") {
+      ui.backupText = JSON.stringify({ v: 1, items: state.items, purchases: state.purchases, lastStore: state.lastStore });
+      renderCopia($("#view"));
+      toast("Copia generada");
+    }
+    else if (act === "copybackup") {
+      var ta = $("#backup");
+      if (!ta.value) { ui.backupText = JSON.stringify({ v: 1, items: state.items, purchases: state.purchases, lastStore: state.lastStore }); renderCopia($("#view")); ta = $("#backup"); }
+      ta.focus(); ta.select();
+      var done = false;
+      try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(ta.value); done = true; } } catch (err) { /* sigue abajo */ }
+      if (!done) { try { done = document.execCommand("copy"); } catch (err2) { done = false; } }
+      toast(done ? "Texto copiado" : "Selecciona el texto y cópialo a mano");
+    }
+    else if (act === "restore") {
+      try {
+        var d = JSON.parse($("#backup").value);
+        if (!d || !Array.isArray(d.items)) throw new Error("formato");
+        state.items = d.items.map(function (i) {
+          return { id: i.id || uid(), name: String(i.name || "Sin nombre"), store: i.store || "Mercadona", cat: i.cat || "Otros", unit: i.unit || "ud", code: String(i.code || ""), img: String(i.img || ""), price: parseNum(i.price), stock: parseNum(i.stock), target: parseNum(i.target) };
+        });
+        state.purchases = Array.isArray(d.purchases) ? d.purchases : [];
+        state.lastStore = d.lastStore || "Mercadona";
+        ui.buy = {};
+        save(); render();
+        toast("Datos restaurados");
+      } catch (err3) {
+        toast("El texto no es una copia válida");
+      }
+    }
+    else if (act === "reset") {
+      if (!ui.armReset) { ui.armReset = true; renderCopia($("#view")); return; }
+      state = { items: [], purchases: [], lastStore: "Mercadona" };
+      ui.buy = {}; ui.armReset = false; ui.backupText = "";
+      save(); render();
+      toast("Datos borrados");
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    var act = t.getAttribute && t.getAttribute("data-act");
+    if (!act) return;
+    var it = findItem(t.getAttribute("data-id"));
+    if (act === "setstock" && it) { it.stock = parseNum(t.value); save(); render(); }
+    else if (act === "setbuy" && it) { var g = getBuy(it); ui.buy[it.id] = { checked: g.checked, qty: parseNum(t.value) }; render(); }
+    else if (act === "check" && it) { var h = getBuy(it); ui.buy[it.id] = { checked: t.checked, qty: h.qty }; render(); }
+  });
+
+  document.addEventListener("input", function (e) {
+    if (e.target.id === "q") {
+      ui.q = e.target.value;
+      $("#list").innerHTML = despensaListHTML();
+    }
+  });
+
+  $("#btnSave").addEventListener("click", saveEdit);
+  $("#btnCancel").addEventListener("click", function () {
+    closeDlg();
+    if (ui.fromScan) { ui.fromScan = false; openScan(); }
+  });
+  $("#btnDel").addEventListener("click", function () {
+    if (!ui.armDelete) { ui.armDelete = true; $("#btnDel").textContent = "¿Seguro? Pulsa otra vez"; return; }
+    state.items = state.items.filter(function (i) { return i.id !== ui.editId; });
+    delete ui.buy[ui.editId];
+    save(); closeDlg(); render();
+    toast("Producto eliminado");
+  });
+
+  /* ---------- Escáner ---------- */
+  var scan = { stream: null, timer: null, reader: null, busy: false, last: "", lastAt: 0, pending: "" };
+
+  function openScan() {
+    var d = $("#scanDlg");
+    scan.pending = ""; scan.last = ""; scan.lastAt = 0;
+    $("#scanMsg").textContent = "Apunta la cámara al código de barras.";
+    $("#scanErr").textContent = "";
+    $("#scanNew").hidden = true;
+    $("#scanCode").value = "";
+    if (typeof d.showModal === "function") d.showModal(); else d.setAttribute("open", "");
+    startCamera();
+  }
+  function stopCamera() {
+    if (scan.timer) { clearInterval(scan.timer); scan.timer = null; }
+    if (scan.reader) { try { scan.reader.reset(); } catch (e) { /* nada */ } scan.reader = null; }
+    if (scan.stream) { scan.stream.getTracks().forEach(function (t) { t.stop(); }); scan.stream = null; }
+    var v = $("#scanVideo");
+    if (v) v.srcObject = null;
+  }
+  function closeScan() {
+    stopCamera();
+    var d = $("#scanDlg");
+    if (typeof d.close === "function") d.close(); else d.removeAttribute("open");
+  }
+  function camError() {
+    $("#scanErr").textContent = "No se pudo abrir la cámara (permiso denegado o no disponible). Puedes escribir o escanear el código en el campo de abajo.";
+  }
+  function loadZXing(cb) {
+    if (window.ZXing) return cb(true);
+    var s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js";
+    s.onload = function () { cb(!!window.ZXing); };
+    s.onerror = function () { cb(false); };
+    document.head.appendChild(s);
+  }
+  function startCamera() {
+    var video = $("#scanVideo");
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { camError(); return; }
+    if ("BarcodeDetector" in window) {
+      var det = new BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"] });
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false }).then(function (s) {
+        scan.stream = s;
+        video.srcObject = s;
+        video.play();
+        scan.timer = setInterval(function () {
+          if (scan.busy || video.readyState < 2) return;
+          scan.busy = true;
+          det.detect(video).then(function (codes) { if (codes.length) onCode(codes[0].rawValue); })
+            .catch(function () { /* sin código en este fotograma */ })
+            .then(function () { scan.busy = false; });
+        }, 300);
+      }).catch(camError);
+    } else {
+      loadZXing(function (ok) {
+        if (!ok) { $("#scanErr").textContent = "No se pudo cargar el lector. Escribe el código en el campo de abajo."; return; }
+        try {
+          scan.reader = new ZXing.BrowserMultiFormatReader();
+          var p = scan.reader.decodeFromConstraints({ video: { facingMode: "environment" }, audio: false }, video, function (res) {
+            if (res) onCode(res.getText());
+          });
+          if (p && p.catch) p.catch(camError);
+        } catch (e) { camError(); }
+      });
+    }
+  }
+  function onCode(raw) {
+    if (scan.pending) return;
+    var code = String(raw || "").replace(/\s+/g, "");
+    if (!code) return;
+    var now = Date.now();
+    if (code === scan.last && now - scan.lastAt < 2500) return;
+    scan.last = code;
+    scan.lastAt = now;
+    if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) { /* nada */ } }
+    var it = state.items.filter(function (i) { return i.code === code; })[0];
+    if (it) {
+      it.stock = r2(it.stock + 1);
+      save(); render();
+      $("#scanMsg").textContent = "+1 " + it.name + " (ahora " + num(it.stock) + ")";
+    } else {
+      scan.pending = code;
+      var free = state.items.filter(function (i) { return !i.code; })
+        .sort(function (a, b) { return a.name.localeCompare(b.name, "es"); });
+      $("#scanNewMsg").textContent = "Código nuevo: " + code;
+      $("#scanLink").innerHTML = free.map(function (i) { return '<option value="' + i.id + '">' + esc(i.name) + "</option>"; }).join("");
+      $("#scanLinkWrap").hidden = !free.length;
+      $("#scanAssign").hidden = !free.length;
+      $("#scanNew").hidden = false;
+      $("#scanInfo").hidden = true;
+      $("#scanFromOff").hidden = true;
+      scan.found = null;
+      $("#scanNewMsg").textContent = "Código nuevo: " + code + " · buscando en Open Food Facts…";
+      lookupOFF(code, function (info) {
+        if (scan.pending !== code) return;
+        if (info) {
+          scan.found = info;
+          $("#scanName").textContent = info.title;
+          $("#scanBrand").textContent = info.brand ? "Marca: " + info.brand : "";
+          if (info.img) { $("#scanImg").src = info.img; $("#scanImg").hidden = false; } else { $("#scanImg").hidden = true; }
+          $("#scanInfo").hidden = false;
+          $("#scanFromOff").hidden = false;
+          $("#scanNewMsg").textContent = "Producto encontrado (código " + code + ")";
+        } else {
+          $("#scanNewMsg").textContent = "Código " + code + ": no está en Open Food Facts o no hay conexión. Asígnalo o créalo a mano.";
+        }
+      });
+    }
+  }
+  function lookupOFF(code, cb) {
+    var url = "https://world.openfoodfacts.org/api/v2/product/" + encodeURIComponent(code) +
+      ".json?fields=product_name,product_name_es,brands,quantity,image_front_small_url";
+    fetch(url).then(function (r) { return r.json(); }).then(function (d) {
+      if (d && d.status === 1 && d.product) {
+        var p = d.product;
+        var name = p.product_name_es || p.product_name || "";
+        if (!name) { cb(null); return; }
+        var brand = (p.brands || "").split(",")[0].trim();
+        var title = name + (p.quantity ? " " + p.quantity : "");
+        cb({ title: title, brand: brand, img: p.image_front_small_url || "" });
+      } else { cb(null); }
+    }).catch(function () { cb(null); });
+  }
+  function endPending() { scan.pending = ""; $("#scanNew").hidden = true; }
+
+  $("#scanAssign").addEventListener("click", function () {
+    var it = findItem($("#scanLink").value);
+    if (it && scan.pending) {
+      it.code = scan.pending;
+      it.stock = r2(it.stock + 1);
+      save(); render();
+      $("#scanMsg").textContent = "+1 " + it.name + " (ahora " + num(it.stock) + ")";
+    }
+    endPending();
+  });
+  $("#scanCreate").addEventListener("click", function () {
+    var code = scan.pending;
+    endPending();
+    closeScan();
+    openEdit(null, code);
+  });
+  $("#scanFromOff").addEventListener("click", function () {
+    var code = scan.pending, info = scan.found;
+    endPending();
+    closeScan();
+    openEdit(null, code, { name: info ? info.title : "", img: info ? info.img : "" });
+  });
+  $("#scanSkip").addEventListener("click", endPending);
+  $("#scanClose").addEventListener("click", closeScan);
+  $("#scanDlg").addEventListener("close", stopCamera);
+  $("#scanCode").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      var v = this.value;
+      this.value = "";
+      scan.last = "";
+      onCode(v);
+    }
+  });
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
